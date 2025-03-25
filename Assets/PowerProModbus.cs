@@ -17,8 +17,6 @@ public class PowerProModbus : MonoBehaviour
     [HideInInspector]
     public bool connected = false;
 
-    PowerPro powerPro;
-
     //first 4 registers: switch states from codesys
 
     //Private vars
@@ -32,7 +30,6 @@ public class PowerProModbus : MonoBehaviour
     void Awake()
     {
         updateDelay = 1.0f/updateFrequency;
-        powerPro = GetComponent<PowerPro>();
         //UModbusTCP
         m_oUModbusTCP = null;
         m_oUModbusTCPResponse = null;
@@ -55,16 +52,16 @@ public class PowerProModbus : MonoBehaviour
         if (t > updateDelay)
         {
             List<ushort> data = new();
-            foreach (bool state in powerPro.sensorStates)
+            foreach (bool state in PowerPro.Singleton.sensorStates)
                 if (state)
                     data.Add(1);
                 else
                     data.Add(0);
-            ushort switchCount = (ushort)powerPro.switchStates.Count;
-            ushort sensorCount = (ushort)powerPro.sensorStates.Count;
-            ushort trainCommandCount = 1;
+            ushort switchCount = (ushort)PowerPro.Singleton.switchStates.Count;
+            ushort sensorCount = (ushort)PowerPro.Singleton.sensorStates.Count;
+            ushort trainCommandCount = 3;
             WriteHolding((ushort)(switchCount + trainCommandCount), data); //publish sensor states
-            ReadHolding(0, (ushort)(switchCount + trainCommandCount + sensorCount)); //read everything for debug and update
+            ReadHolding(0, (ushort)(switchCount + trainCommandCount)); //read everything for debug and update
             t = 0;
         }
     }
@@ -120,7 +117,7 @@ public class PowerProModbus : MonoBehaviour
     public void ReadHolding(ushort startAddress, ushort addresses)
     {
         PreapareModbus();
-        m_oUModbusTCP.ReadHoldingRegister(2, 1, startAddress, addresses); //Read 7 registers starting at 0
+        m_oUModbusTCP.ReadHoldingRegister(2, 1, startAddress, addresses);
     }
 
     void UModbusTCPOnResponseData(ushort _oID, byte _oUnit, byte _oFunction, byte[] _oValues)
@@ -138,12 +135,12 @@ public class PowerProModbus : MonoBehaviour
         Debug.Log(string.Join(", ", iValues)); //debug for clairity
 
         for (int i = 0; i < 4; i++)
-            powerPro.switchStates[i] = iValues[i] != 0; //update all switch states
+            PowerPro.Singleton.switchStates[i] = iValues[i] != 0; //update all switch states
 
-        int trainCommand = iValues[4]; //update command
-        powerPro.accelerateForward = trainCommand == accelerateForwardCommand;
-        powerPro.accelerateBackward = trainCommand == accelerateBackwardCommand;
-        powerPro.brake = trainCommand == brakeCommand;
+        byte[] trainCommand = new byte[5]; //Get the bytes of the train command
+        for(int i = 0; i < 6; i++)
+            trainCommand[i] = oResponseFinalValues[8 + i];
+        PowerPro.Singleton.InterpretCommand(trainCommand);
     }
 
     void UModbusTCPOnException(ushort _oID, byte _oUnit, byte _oFunction, byte _oException)

@@ -6,13 +6,10 @@ public class Train : MonoBehaviour
 
     public float topSpeed;
     public float timeToTopSpeed;
-    public float timeToStop;
 
-    public bool accelerateForward;
-    public bool accelerateBackward;
-    public bool brake;
+    public float targetSpeed;
 
-    float speedCoefficient = 0;
+    public float speed = 0;
 
     private void Start()
     {
@@ -20,39 +17,15 @@ public class Train : MonoBehaviour
     }
     void Update()
     {
-        if (accelerateForward)
-            speedCoefficient += Time.deltaTime / timeToTopSpeed;
-        if (accelerateBackward)
-            speedCoefficient -= Time.deltaTime / timeToTopSpeed;
-
-        if (brake)
-        {
-            if(speedCoefficient < 0)
-            {
-                speedCoefficient += Time.deltaTime / timeToStop;
-                speedCoefficient = Mathf.Clamp(speedCoefficient, -1.0f, 0.0f);
-            }
-            else if(speedCoefficient > 0)
-            {
-                speedCoefficient -= Time.deltaTime / timeToStop;
-                speedCoefficient = Mathf.Clamp(speedCoefficient, 0.0f, 1.0f);
-            }
-        }
-
-        speedCoefficient = Mathf.Clamp(speedCoefficient, -1.0f, 1.0f);
-
-        float speed = speedCoefficient * topSpeed;
+        speed += Mathf.Sign(targetSpeed - speed) * topSpeed / timeToTopSpeed * Time.deltaTime;
 
         transform.eulerAngles = new Vector3(0, track.TrackAngle(transform), 0);
 
         if (speed > 0)
-        {
             transform.position += Mathf.Abs(speed) * track.ForwardDirection(transform) * Time.deltaTime;
-        }
         else if(speed < 0)
-        {
             transform.position += Mathf.Abs(speed) * track.ReverseDirection(transform) * Time.deltaTime;
-        }
+        speed = Mathf.Clamp(speed,-topSpeed, topSpeed);
 
         if (track.nextNode != null)
             if(track.nextNode.TryGetComponent(out NodePathSwitch switchComponent))

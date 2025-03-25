@@ -18,11 +18,9 @@ public class PowerPro : MonoBehaviour
 
     public bool debugSensorOrder = true;
 
+    public float speedStep = 1;
+
     [Header("train command")]
-    public int trainIndex;
-    public bool accelerateForward;
-    public bool accelerateBackward;
-    public bool brake;
     public bool acceptModbusCommand = true;
 
 
@@ -41,6 +39,29 @@ public class PowerPro : MonoBehaviour
     {
         switches.Add(pathSwitch);
         switchStates.Add(false);
+    }
+
+    public void InterpretCommand(byte[] bytes)
+    {
+        if (acceptModbusCommand)
+        {
+            if (bytes[0] == 72)  //selectLoco
+            {
+                var loco = trains[bytes[1]];
+                if (bytes[2] == 74)
+                    loco.targetSpeed += speedStep;
+                else if (bytes[2] == 75)
+                    loco.targetSpeed -= speedStep;
+                else if (bytes[2] == 90)
+                    loco.targetSpeed += speedStep*4.0f/10.0f;
+                else if (bytes[2] == 91)
+                    loco.targetSpeed -= speedStep * 4.0f / 10.0f;
+                if (bytes[3] == 106)
+                    loco.targetSpeed = Mathf.Abs(loco.targetSpeed);
+                else if (bytes[3] == 107)
+                    loco.targetSpeed = -Mathf.Abs(loco.targetSpeed);
+            }
+        }
     }
 
     private void Update()
@@ -67,18 +88,6 @@ public class PowerPro : MonoBehaviour
                     sensors[i].active = true;
             }
             sensorStates[i] = sensors[i].active;
-        }
-
-        if (acceptModbusCommand)
-        {
-            if (trains.Count >= trainIndex)
-            {
-                trains[trainIndex].accelerateBackward = accelerateBackward;
-                trains[trainIndex].accelerateForward = accelerateForward;
-                trains[trainIndex].brake = brake;
-            }
-            else
-                Debug.Log("train not in list");
         }
     }
 
