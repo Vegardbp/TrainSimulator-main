@@ -5,13 +5,10 @@ using System.Collections.Generic;
 
 public class PowerProModbus : MonoBehaviour
 {
-    public string inputIP = "10.0.0.67";
-    public string inputPort = "5020";
-    
-    public int accelerateForwardCommand = 1;
-    public int accelerateBackwardCommand = 2;
-    public int brakeCommand = 3;
+    public string inputIP;
+    public string inputPort = "502";
 
+    public ushort modbusStartIndex = 0;
     public ushort maxTrains = 5;
 
     public float updateFrequency = 10;
@@ -53,7 +50,7 @@ public class PowerProModbus : MonoBehaviour
         t += Time.deltaTime;
         if (t > updateDelay)
         {
-            ReadHolding(0, (ushort)(maxTrains*2)); //read everything for debug and update
+            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2)); //read everything for debug and update
             t = 0;
         }
     }
