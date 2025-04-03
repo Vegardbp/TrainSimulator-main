@@ -8,14 +8,23 @@ public class LookAtTarget : MonoBehaviour
     public float camSpeed = 10;
     void Start()
     {
-        pos = target.position;
+        if(target != null)
+            pos = target.position;
     }
 
     Vector3 pos;
 
     void Update()
     {
-        pos = Vector3.MoveTowards(pos, target.position, camSpeed*Time.deltaTime);
-        transform.LookAt(pos, Vector3.up);
+        if(target != null)
+        {
+            pos = Vector3.MoveTowards(pos, target.position, camSpeed * Time.deltaTime);
+            transform.LookAt(pos, Vector3.up);
+        }
+        else
+        {
+            pos = Vector3.MoveTowards(pos, Vector3.zero, camSpeed * Time.deltaTime);
+            transform.LookAt(pos, Vector3.up);
+        }
     }
 }

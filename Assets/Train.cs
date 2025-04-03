@@ -1,34 +1,52 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Train : MonoBehaviour
 {
-    public NodePath track;
+    public float position = 0f; // Position between 0 and 60 (always relative to the main track)
+    public bool isOnAltTrack = false; // Whether the train is on an alternate track
 
-    public float topSpeed;
-    public float timeToTopSpeed;
-
-    public float targetSpeed;
-
-    public float speed = 0;
-
-    private void Start()
-    {
-        PowerPro.Singleton.AddTrain(this);
-    }
     void Update()
     {
-        speed += Mathf.Sign(targetSpeed - speed) * topSpeed / timeToTopSpeed * Time.deltaTime;
+        // Convert position (0-60) to normalized (0-1) for the main track
+        float normalizedPosition = position / 60f;
 
-        transform.eulerAngles = new Vector3(0, track.TrackAngle(transform), 0);
+        // Get the position on the main track
+        var (mainTrackPosition, mainTrackForward) = PowerPro.Singleton.mainTrack.GetPositionAtNormalized(normalizedPosition);
 
-        if (speed > 0)
-            transform.position += Mathf.Abs(speed) * track.ForwardDirection(transform) * Time.deltaTime;
-        else if(speed < 0)
-            transform.position += Mathf.Abs(speed) * track.ReverseDirection(transform) * Time.deltaTime;
-        speed = Mathf.Clamp(speed,-topSpeed, topSpeed);
+        if (!isOnAltTrack)
+        {
+            // If on the main track, use the main track position directly
+            transform.position = mainTrackPosition;
+            transform.rotation = Quaternion.LookRotation(mainTrackForward, Vector3.up);
+        }
+        else
+        {
+            // If on an alternate track, find the closest alternate track and project the main track position onto it
+            NodePath closestAltTrack = null;
+            float closestDistance = Mathf.Infinity;
+            Vector3 closestPointOnAltTrack = Vector3.zero;
+            Vector3 closestForward = Vector3.forward;
 
-        if (track.nextNode != null)
-            if(track.nextNode.TryGetComponent(out NodePathSwitch switchComponent))
-                track = switchComponent.NextPath(track);
+            foreach (var altTrack in PowerPro.Singleton.altTracks)
+            {
+                var (altNormalizedPosition, altClosestPoint, altForward) = altTrack.ProjectPointOntoPath(mainTrackPosition);
+                float distance = Vector3.Distance(mainTrackPosition, altClosestPoint);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestAltTrack = altTrack;
+                    closestPointOnAltTrack = altClosestPoint;
+                    closestForward = altForward;
+                }
+            }
+
+            if (closestAltTrack != null)
+            {
+                // Use the closest point on the alternate track
+                transform.position = closestPointOnAltTrack;
+                transform.rotation = Quaternion.LookRotation(closestForward, Vector3.up);
+            }
+        }
     }
 }

@@ -12,6 +12,8 @@ public class PowerProModbus : MonoBehaviour
     public int accelerateBackwardCommand = 2;
     public int brakeCommand = 3;
 
+    public ushort maxTrains = 5;
+
     public float updateFrequency = 10;
 
     [HideInInspector]
@@ -51,17 +53,7 @@ public class PowerProModbus : MonoBehaviour
         t += Time.deltaTime;
         if (t > updateDelay)
         {
-            List<ushort> data = new();
-            foreach (bool state in PowerPro.Singleton.sensorStates)
-                if (state)
-                    data.Add(1);
-                else
-                    data.Add(0);
-            ushort switchCount = (ushort)PowerPro.Singleton.switchStates.Count;
-            ushort sensorCount = (ushort)PowerPro.Singleton.sensorStates.Count;
-            ushort trainCommandCount = 3;
-            WriteHolding((ushort)(switchCount + trainCommandCount), data); //publish sensor states
-            ReadHolding(0, (ushort)(switchCount + trainCommandCount)); //read everything for debug and update
+            ReadHolding(0, (ushort)(maxTrains*2)); //read everything for debug and update
             t = 0;
         }
     }
@@ -120,6 +112,11 @@ public class PowerProModbus : MonoBehaviour
         m_oUModbusTCP.ReadHoldingRegister(2, 1, startAddress, addresses);
     }
 
+    bool IntToBool(int i)
+    {
+        return (i != 0);
+    }
+
     void UModbusTCPOnResponseData(ushort _oID, byte _oUnit, byte _oFunction, byte[] _oValues)
     {
         int iNumberOfValues = _oValues[8];
@@ -134,13 +131,14 @@ public class PowerProModbus : MonoBehaviour
 
         Debug.Log(string.Join(", ", iValues)); //debug for clairity
 
-        for (int i = 0; i < 4; i++)
-            PowerPro.Singleton.switchStates[i] = iValues[i] != 0; //update all switch states
+        PowerPro.Singleton.SetTrainCount(iValues.Length / 2);
 
-        byte[] trainCommand = new byte[5]; //Get the bytes of the train command
-        for(int i = 0; i < 6; i++)
-            trainCommand[i] = oResponseFinalValues[8 + i];
-        PowerPro.Singleton.InterpretCommand(trainCommand);
+        for (int i = 0; i < iValues.Length; i += 2)
+        {
+            int trainIndex = i / 2;
+            PowerPro.Singleton.trains[trainIndex].position = iValues[i];
+            PowerPro.Singleton.trains[trainIndex].isOnAltTrack = IntToBool(iValues[i + 1]);
+        }
     }
 
     void UModbusTCPOnException(ushort _oID, byte _oUnit, byte _oFunction, byte _oException)

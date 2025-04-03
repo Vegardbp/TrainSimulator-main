@@ -4,95 +4,58 @@ using UnityEngine;
 
 public class PowerPro : MonoBehaviour
 {
+    public NodePath mainTrack; // The red track (oval loop)
+    public List<NodePath> altTracks; // The blue tracks (three separate straight paths)
     public static PowerPro Singleton { get; private set; }
 
     public float globalSensorRange;
 
-    List<NodePathSwitch> switches = new();
-    public List<bool> switchStates;
+    public List<Train> trains = new();
 
-    List<MagneticSensor> sensors = new();
-    public List<bool> sensorStates;
+    public GameObject trainPrefab;
 
-    List<Train> trains = new();
-
-    public bool debugSensorOrder = true;
-
-    public float speedStep = 1;
-
-    [Header("train command")]
-    public bool acceptModbusCommand = true;
-
-
-    public void AddTrain(Train train)
+    public void SetTrainCount(int count)
     {
-        trains.Add(train);
-    }
-
-    public void AddSensor(MagneticSensor sensor)
-    {
-        sensors.Add(sensor);
-        sensorStates.Add(false);
-    }
-
-    public void AddSwitch(NodePathSwitch pathSwitch)
-    {
-        switches.Add(pathSwitch);
-        switchStates.Add(false);
-    }
-
-    public void InterpretCommand(byte[] bytes)
-    {
-        if (acceptModbusCommand)
+        int currentCount = trains.Count;
+        if (count < currentCount)
         {
-            if (bytes[0] == 72)  //selectLoco
+            // Remove excess trains
+            int toRemove = currentCount - count;
+            for (int i = 0; i < toRemove; i++)
             {
-                var loco = trains[bytes[1]];
-                if (bytes[2] == 74)
-                    loco.targetSpeed += speedStep;
-                else if (bytes[2] == 75)
-                    loco.targetSpeed -= speedStep;
-                else if (bytes[2] == 90)
-                    loco.targetSpeed += speedStep*4.0f/10.0f;
-                else if (bytes[2] == 91)
-                    loco.targetSpeed -= speedStep * 4.0f / 10.0f;
-                if (bytes[3] == 106)
-                    loco.targetSpeed = Mathf.Abs(loco.targetSpeed);
-                else if (bytes[3] == 107)
-                    loco.targetSpeed = -Mathf.Abs(loco.targetSpeed);
+                Train train = trains[trains.Count - 1];
+                Destroy(train.gameObject);
+                trains.RemoveAt(trains.Count - 1);
             }
         }
-    }
-
-    private void Update()
-    {
-        if (debugSensorOrder)
+        else if (count > currentCount)
         {
-            float i = 1;
-            foreach(MagneticSensor sensor in sensors)
-            {
-                Debug.DrawLine(sensor.transform.position,sensor.transform.position+Vector3.up*i);
-                i++;
-            }
+            // Add new trains
+            int toAdd = count - currentCount;
+            for (int i = 0; i < toAdd; i++)
+                trains.Add(Instantiate(trainPrefab).GetComponent<Train>());
         }
-        for (int i = 0; i < switches.Count; i++)
-            switches[i].switchPath = switchStates[i];
-
-        for(int i = 0;i < sensors.Count; i++)
-        {
-            sensors[i].active = false;
-            float sensorRange = sensors[i].sensorRangeCoefficient * globalSensorRange;
-            foreach(var train in trains)
-            {
-                if (Vector3.Distance(sensors[i].transform.position, train.transform.position) < sensorRange)
-                    sensors[i].active = true;
-            }
-            sensorStates[i] = sensors[i].active;
-        }
+        // If count equals currentCount, do nothing
     }
 
     private void Awake()
     {
         Singleton = this;
+    }
+
+    public Transform ClosestTrain(Vector3 pos)
+    {
+        float closest = Mathf.Infinity;
+        Transform closestTrain = null;
+        foreach(var train in trains)
+        {
+            float d = Vector3.Distance(train.transform.position, pos);
+            if (d < closest)
+            {
+                closest = d;
+                closestTrain = train.transform;
+            }
+        }
+        return closestTrain;
     }
 }
