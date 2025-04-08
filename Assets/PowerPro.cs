@@ -14,6 +14,10 @@ public class PowerPro : MonoBehaviour
 
     public GameObject trainPrefab;
 
+    public int[] iValues = null;
+
+    public bool update = false;
+
     public void SetTrainCount(int count)
     {
         int currentCount = trains.Count;
@@ -57,5 +61,29 @@ public class PowerPro : MonoBehaviour
             }
         }
         return closestTrain;
+    }
+
+    bool IntToBool(int i)
+    {
+        return (i != 0);
+    }
+
+    private void Update()
+    {
+        if(iValues != null && update)
+        {
+            update = false;
+            SetTrainCount(iValues.Length / 3);
+
+            for (int i = 0; i < iValues.Length; i += 3)
+            {
+                int trainIndex = i / 2;
+                if (trains[trainIndex].CodesysPos != iValues[i])
+                    trains[trainIndex].position = iValues[i];
+                    trains[trainIndex].CodesysPos = iValues[i];
+                trains[trainIndex].isOnAltTrack = IntToBool(iValues[i + 1]);
+                trains[trainIndex].speed = iValues[i + 2];
+            }
+        }
     }
 }

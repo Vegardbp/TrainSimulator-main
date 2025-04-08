@@ -16,8 +16,6 @@ public class PowerProModbus : MonoBehaviour
     [HideInInspector]
     public bool connected = false;
 
-    //first 4 registers: switch states from codesys
-
     //Private vars
     //UModbusTCP
     UModbusTCP m_oUModbusTCP;
@@ -50,7 +48,7 @@ public class PowerProModbus : MonoBehaviour
         t += Time.deltaTime;
         if (t > updateDelay)
         {
-            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2)); //read everything for debug and update
+            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 3)); //read everything for debug and update
             t = 0;
         }
     }
@@ -109,11 +107,6 @@ public class PowerProModbus : MonoBehaviour
         m_oUModbusTCP.ReadHoldingRegister(2, 1, startAddress, addresses);
     }
 
-    bool IntToBool(int i)
-    {
-        return (i != 0);
-    }
-
     void UModbusTCPOnResponseData(ushort _oID, byte _oUnit, byte _oFunction, byte[] _oValues)
     {
         int iNumberOfValues = _oValues[8];
@@ -126,16 +119,11 @@ public class PowerProModbus : MonoBehaviour
 
         int[] iValues = UModbusTCPHelpers.GetIntsOfBytes(oResponseFinalValues);
 
+        Debug.Log("Noge");
         Debug.Log(string.Join(", ", iValues)); //debug for clairity
 
-        PowerPro.Singleton.SetTrainCount(iValues.Length / 2);
-
-        for (int i = 0; i < iValues.Length; i += 2)
-        {
-            int trainIndex = i / 2;
-            PowerPro.Singleton.trains[trainIndex].position = iValues[i];
-            PowerPro.Singleton.trains[trainIndex].isOnAltTrack = IntToBool(iValues[i + 1]);
-        }
+        PowerPro.Singleton.iValues = iValues;
+        PowerPro.Singleton.update = true;
     }
 
     void UModbusTCPOnException(ushort _oID, byte _oUnit, byte _oFunction, byte _oException)

@@ -9479,10 +9479,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputIP: 158.38.140.50
   inputPort: 502
-  accelerateForwardCommand: 1
-  accelerateBackwardCommand: 2
-  brakeCommand: 3
-  maxTrains: 5
+  modbusStartIndex: 0
+  maxTrains: 2
   updateFrequency: 50
   connected: 0
 --- !u!1001 &1820410708

@@ -3,17 +3,20 @@ using System.Collections.Generic;
 
 public class Train : MonoBehaviour
 {
+    public int CodesysPos;
     public float position = 0f; // Position between 0 and 60 (always relative to the main track)
     public bool isOnAltTrack = false; // Whether the train is on an alternate track
 
-    void Update()
+    public float speed;
+
+    void FixedUpdate()
     {
         // Convert position (0-60) to normalized (0-1) for the main track
         float normalizedPosition = position / 60f;
 
         // Get the position on the main track
         var (mainTrackPosition, mainTrackForward) = PowerPro.Singleton.mainTrack.GetPositionAtNormalized(normalizedPosition);
-
+        position += speed/64.0f * Time.deltaTime;
         if (!isOnAltTrack)
         {
             // If on the main track, use the main track position directly
