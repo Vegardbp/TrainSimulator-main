@@ -3,7 +3,27 @@ guid: 94c4f8f843f43ad429aeb9cd4e0cc833
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Cast Iron
+    second: {fileID: 2100000, guid: e453f259b29ca68419258f17cd044f83, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Gravel
+    second: {fileID: 2100000, guid: d3271e84160a5a345ab89a853ac21a9d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Scratched polished aluminium
+    second: {fileID: 2100000, guid: dc318d1232d72044a80f61f344815246, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood plank boat
+    second: {fileID: 2100000, guid: c8856e63d96e8184a88a48c2d6707380, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
