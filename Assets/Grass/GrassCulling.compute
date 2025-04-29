@@ -1,0 +1,80 @@
+#pragma kernel CSMain
+
+struct Grass
+{
+    float4 pos;
+    float4 rot;
+};
+
+StructuredBuffer<Grass> allGrassPositions;
+
+AppendStructuredBuffer<int> highLODGrassBuffer;
+
+int count;
+
+float3 camPos;
+float alpha;
+
+float4 frustumPlanes[6];
+
+float closeDst;
+float farDst;
+
+float hash(uint x, int seed)
+{
+    seed *= x;
+    seed = (seed ^ 61) ^ (seed >> 16);
+    seed *= 9;
+    seed = seed ^ (seed >> 4);
+    seed *= 0x27d4eb2d;
+    seed = seed ^ (seed >> 15);
+    float outVal = seed / 10000000.0f;
+    outVal -= (int) outVal;
+    return outVal;
+}
+
+bool isInsideFrustum(float3 pos)
+{
+    for (int i = 0; i < 6; i++)
+    {
+        float4 plane = frustumPlanes[i];
+        if (dot(plane.xyz, pos) + plane.w < 0)
+            return false; // Outside frustum
+    }
+    return true;
+}
+
+void append(float3 grass, int i)
+{
+    if (isInsideFrustum(grass))
+        highLODGrassBuffer.Append(i);
+}
+
+[numthreads(528,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int i = id.x;
+    if (i >= count)
+        return;
+    float3 grass = allGrassPositions[i].pos.xyz;
+    float d = length(camPos - grass);
+    
+    if(d < 4)
+        return;
+    
+    if (d < closeDst)
+    {
+        append(grass, i);
+        return;
+    }
+    
+    if (d < farDst)
+        if (hash(id.x, 100) < 0.4)
+        {
+            append(grass, i);
+            return;
+        }
+
+    if (hash(id.x, 100) < 0.1)
+        append(grass,i);
+}

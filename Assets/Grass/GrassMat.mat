@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: GrassMat
+  m_Shader: {fileID: 4800000, guid: 278301a50106c4b47871203f3674088c, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 3fbcd31371ea58d4388011d265f26423, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _mainTex:
+        m_Texture: {fileID: 2800000, guid: bfce37b26e0d27b4c8de73954dc401e4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _noiseTex:
+        m_Texture: {fileID: 2800000, guid: 2791154dcfff2164daa282f028e60fe6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _normalTex:
+        m_Texture: {fileID: 2800000, guid: 43f5a1982b377fd44b3e1da0a56fb832, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _worldNormalTex:
+        m_Texture: {fileID: 2800000, guid: f89eb21c4a93d2b43911e7da393b00e4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AAScale: 1.965
+    - _AlphaThreshold: 0.5
+    - _Cutoff: 0.9
+    - _MaxHeight: 2
+    - _MinHeight: 0
+    - _Scale: 400
+    - _bendStrength: 0
+    - _colorNoiseScale: 14.84
+    - _heightNoiseScale: 1
+    - _normalStrength: 32
+    - _normalVerticality: 0.193
+    - _scale: 800
+    - _windMagnitude: 30
+    - _windNoiseScale: 50
+    - _windRate: 0.02
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.5, g: 1, b: 0.5, a: 1}
+    - _color: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 1}
+    - _color1: {r: 0, g: 0.6792453, b: 0.0029031825, a: 1}
+    - _color2: {r: 1, g: 0.7670072, b: 0, a: 1}
+    - _scale: {r: 150, g: 25, b: 150, a: 1}
+    - _scale1: {r: 150, g: 50, b: 150, a: 0}
+    - _scale2: {r: 200, g: 200, b: 200, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

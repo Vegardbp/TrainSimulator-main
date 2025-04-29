@@ -9,6 +9,8 @@ public class Train : MonoBehaviour
 
     public float speed;
 
+    public float turnspeed = 45f;
+
     void FixedUpdate()
     {
         // Convert position (0-60) to normalized (0-1) for the main track
@@ -21,7 +23,7 @@ public class Train : MonoBehaviour
         {
             // If on the main track, use the main track position directly
             transform.position = mainTrackPosition;
-            transform.rotation = Quaternion.LookRotation(mainTrackForward, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(mainTrackForward, Vector3.up), turnspeed*Time.deltaTime);
         }
         else
         {
