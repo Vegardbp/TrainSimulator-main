@@ -50,7 +50,7 @@ public class Train : MonoBehaviour
             {
                 // Use the closest point on the alternate track
                 transform.position = closestPointOnAltTrack;
-                transform.rotation = Quaternion.LookRotation(closestForward, Vector3.up);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(closestForward, Vector3.up), turnspeed * Time.deltaTime);
             }
         }
     }
