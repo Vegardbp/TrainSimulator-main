@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - terrain
+  - Train
   layers:
   - Default
   - TransparentFX
@@ -12,8 +13,8 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
+  - Train
+  - Outline
   - 
   - 
   - 

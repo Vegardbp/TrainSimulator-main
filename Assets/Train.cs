@@ -13,6 +13,7 @@ public class Train : MonoBehaviour
 
     void FixedUpdate()
     {
+        position = Mathf.Clamp(position, 1f, 59f);
         // Convert position (0-60) to normalized (0-1) for the main track
         float normalizedPosition = position / 60f;
 

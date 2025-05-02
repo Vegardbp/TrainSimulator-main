@@ -1,30 +1,61 @@
-using NUnit.Framework;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LookAtTarget : MonoBehaviour
 {
     public Transform target;
-    public float camSpeed = 10;
+    public Transform center;
+    public float camSpeed = 10f;       // Speed at which the focus point moves
+    public float rotSpeed = 5f;        // Speed of rotation interpolation
+    public float posCoefficient = 0.5f;  // 0 = looks at origin, 1 = full target, in between = offset
+
+    public GameObject TrainUI;
+    public Slider SpeedSlider;
+
+    private Vector3 pos;
+
     void Start()
     {
-        if(target != null)
-            pos = target.position;
+        Vector3 rawTarget = target != null ? target.position : center.position;
+        pos = Vector3.Lerp(center.position, rawTarget, posCoefficient);
     }
 
-    Vector3 pos;
+    Transform prevTarget = null;
 
     void Update()
     {
+        if (target != null)
+        {
+            OutlineEffect[] outlines = target.gameObject.GetComponents<OutlineEffect>();
+            if(outlines.Length > 1)
+                outlines[1].EnableOutline();
+        }
+
+
+        Vector3 rawTarget = target != null ? target.position : center.position;
+        Vector3 adjustedTarget = Vector3.Lerp(center.position, rawTarget, posCoefficient);
+
+        // Smooth position movement
+        pos = Vector3.MoveTowards(pos, adjustedTarget, camSpeed * Time.deltaTime);
+
+        // Rotation toward the smoothed position
+        Vector3 dir = pos - transform.position;
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotSpeed * Time.deltaTime);
+        }
+
+
+
+        TrainUI.SetActive(target != null);
         if(target != null)
         {
-            pos = Vector3.MoveTowards(pos, target.position, camSpeed * Time.deltaTime);
-            transform.LookAt(pos, Vector3.up);
+            Train targetTrain = target.transform.parent.gameObject.GetComponent<Train>();
+            if (prevTarget != target)
+                SpeedSlider.value = targetTrain.speed;
+            targetTrain.speed = SpeedSlider.value;
         }
-        else
-        {
-            pos = Vector3.MoveTowards(pos, Vector3.zero, camSpeed * Time.deltaTime);
-            transform.LookAt(pos, Vector3.up);
-        }
+        prevTarget = target;
     }
 }
