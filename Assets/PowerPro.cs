@@ -73,16 +73,13 @@ public class PowerPro : MonoBehaviour
         if(iValues != null && update)
         {
             update = false;
-            SetTrainCount(iValues.Length / 3);
+            SetTrainCount(iValues.Length / 2);
 
-            for (int i = 0; i < iValues.Length; i += 3)
+            for (int i = 0; i < iValues.Length; i += 2)
             {
                 int trainIndex = i / 2;
-                if (trains[trainIndex].CodesysPos != iValues[i])
-                    trains[trainIndex].position = iValues[i];
-                    trains[trainIndex].CodesysPos = iValues[i];
-                trains[trainIndex].isOnAltTrack = IntToBool(iValues[i + 1]);
-                trains[trainIndex].speed = iValues[i + 2];
+                trains[trainIndex].currentBlock = iValues[i];
+                trains[trainIndex].targetBlock = iValues[i+1];
             }
         }
     }

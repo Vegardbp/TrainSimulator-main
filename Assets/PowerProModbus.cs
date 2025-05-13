@@ -48,7 +48,7 @@ public class PowerProModbus : MonoBehaviour
         t += Time.deltaTime;
         if (t > updateDelay)
         {
-            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 3)); //read everything for debug and update
+            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2)); //read everything for debug and update
             t = 0;
         }
     }

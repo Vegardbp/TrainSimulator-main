@@ -230,9 +230,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 179f068ccfcfc784a8957b86f6d46996, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CodesysPos: 0
+  active: 1
+  targetBlock: 0
+  currentBlock: 0
   position: 0
   isOnAltTrack: 0
+  topSpeed: 75
   speed: 0
   turnspeed: 45
 --- !u!1001 &8538114056130795321
