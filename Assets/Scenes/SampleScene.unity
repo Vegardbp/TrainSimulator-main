@@ -11871,6 +11871,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DemoTrain
       objectReference: {fileID: 0}
+    - target: {fileID: 6259260749159444651, guid: bbedb10aecf73ed4d9a475dd9cb64c30, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -14718,6 +14722,10 @@ PrefabInstance:
     - target: {fileID: 6259260749159444651, guid: bbedb10aecf73ed4d9a475dd9cb64c30, type: 3}
       propertyPath: m_Name
       value: Train
+      objectReference: {fileID: 0}
+    - target: {fileID: 6259260749159444651, guid: bbedb10aecf73ed4d9a475dd9cb64c30, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -18231,7 +18239,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -83.62, y: 15.600006}
+  m_AnchoredPosition: {x: -83.619995, y: 15.599976}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1279625136
@@ -20699,7 +20707,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1470238151
 MonoBehaviour:
   m_ObjectHideFlags: 0

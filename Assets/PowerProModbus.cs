@@ -128,7 +128,7 @@ public class PowerProModbus : MonoBehaviour
 
     void UModbusTCPOnException(ushort _oID, byte _oUnit, byte _oFunction, byte _oException)
     {
-        if (_oException != 3)
+        if (_oException != 3 && _oException != 2)
             connected = false;
         Debug.Log("Exception: " + _oException);
     }
