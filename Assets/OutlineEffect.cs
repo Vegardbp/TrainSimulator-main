@@ -51,6 +51,6 @@ public class OutlineEffect : MonoBehaviour
     float outlineFrames = 0;
     public void EnableOutline()
     {
-        outlineFrames = 1;
+        outlineFrames = 3;
     }
 }

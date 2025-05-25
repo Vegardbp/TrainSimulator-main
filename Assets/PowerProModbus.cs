@@ -40,7 +40,23 @@ public class PowerProModbus : MonoBehaviour
     void Update()
     {
         if (connected)
+        {
             TryRead();
+            List<ushort> writeData = new();
+            var trains = PowerPro.Singleton.trains;
+            for (int i = 0; i < trains.Count; i++)
+            {
+                if (trains[i].targetFlag != null)
+                {
+                    writeData.Add((ushort)trains[i].targetFlag.index);
+                }
+                else
+                {
+                    writeData.Add((ushort)1000);
+                }
+            }
+            WriteHolding((ushort)(maxTrains * 2 + 1), writeData);
+        }
     }
 
     void TryRead()

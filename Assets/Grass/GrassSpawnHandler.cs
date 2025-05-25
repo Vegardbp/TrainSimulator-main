@@ -1,49 +1,72 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using static UnityEngine.Rendering.DebugUI;
 
 public class GrassSpawnHandler : MonoBehaviour
 {
     ComputeBuffer grassBuffer;
 
-    GraphicsBuffer commandBuf;
-    GraphicsBuffer.IndirectDrawIndexedArgs[] commandData;
-    ComputeBuffer highLODGrassBuffer;
-    ComputeBuffer highLODGrassCount;
+    GraphicsBuffer highCommandBuf;
+    GraphicsBuffer.IndirectDrawIndexedArgs[] highCommandData;
+    ComputeBuffer highLODBuffer;
     public uint count = 1000; // Number of grass blades
     public bool regenerate;
     public LayerMask ground;
     public float size = 200; // Terrain area size
     public float heightAdder = 0.2f;
-    public Mesh grassMesh; // Assign in inspector
+    public Mesh highLODGrassMesh; // Assign in inspector
     public Material grassMaterial; // Assign in inspector
+
 
     public float closeDistance = 50;
     public float farDistance = 150;
 
     public float density;
 
+    public int framesForGeneration = 60;
+
+    public bool useCPUFrustrum = true;
+
     public ComputeShader GrassCull;
-    const int commandCount = 1;
+
+    public int frustrumLeeway = 6;
+
+    private Bounds bounds;
+
     void Start()
     {
-        FillBuffer();
+        StartCoroutine(FillBuffer());
+
+        bounds = new Bounds(transform.position, new Vector3(size * 2, 1000f, size * 2));
     }
+
+    int localCount = 0;
 
     void Update()
     {
         if (regenerate)
-        {
-            FillBuffer();
-            regenerate = false;
-        }
+            StartCoroutine(FillBuffer());
+        regenerate = false;
         RenderGrass();
     }
 
-    void FillBuffer()
+    RenderParams highRp;
+
+    bool buffersGenerated = false;
+
+    IEnumerator FillBuffer()
     {
+        buffersGenerated = false;
         Release();
 
-        grassBuffer = new ComputeBuffer((int)(count*2), sizeof(float) * 8);
+        highRp = new RenderParams(grassMaterial)
+        {
+            worldBounds = new Bounds(transform.position, new Vector3(size * 2, 10000, size * 2)),
+            matProps = new MaterialPropertyBlock()
+        };
+
         List<float> bufferData = new();
 
         void AddGrass(Vector3 pos, Quaternion rot)
@@ -58,10 +81,15 @@ public class GrassSpawnHandler : MonoBehaviour
             bufferData.Add(rot.z);
             bufferData.Add(rot.w);
         }
-        int i = 0;
-        while (bufferData.Count < count * 8)
+
+        int attempts = 0;
+        int validHits = 0;
+        int attemptsThisFrame = 0;
+
+        while (attempts < count && validHits < count)
         {
-            i++;
+            attempts++;
+            attemptsThisFrame++;
             Vector3 rayStart = transform.position + new Vector3(Random.Range(-size, size), 500, Random.Range(-size, size));
             if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, Mathf.Infinity, ground))
             {
@@ -77,70 +105,82 @@ public class GrassSpawnHandler : MonoBehaviour
                     forward = Quaternion.AngleAxis(randomAngle, normal) * forward;
                     Quaternion rotation = Quaternion.LookRotation(forward, normal);
                     AddGrass(pos, rotation);
+                    validHits++;
                 }
             }
-            if(i > count * 10)
+            if (attemptsThisFrame > count / framesForGeneration)
             {
-                AddGrass(Vector3.zero ,Quaternion.identity);
-                break;
+                attemptsThisFrame = 0;
+                yield return null;
             }
         }
 
-        grassBuffer.SetData(bufferData);
+        // If we have fewer hits than count, adjust count here (optional)
+        localCount = validHits;
 
-        commandBuf = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, commandCount, GraphicsBuffer.IndirectDrawIndexedArgs.size);
-        commandData = new GraphicsBuffer.IndirectDrawIndexedArgs[commandCount];
+        if (localCount >= 10)
+        {
+            grassBuffer = new ComputeBuffer((int)(localCount), sizeof(float) * 8);
+            grassBuffer.SetData(bufferData);
 
-        highLODGrassBuffer = new ComputeBuffer((int)count, sizeof(int), ComputeBufferType.Append);
-        highLODGrassCount = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
+            highCommandBuf = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, 1, GraphicsBuffer.IndirectDrawIndexedArgs.size);
+            highCommandData = new GraphicsBuffer.IndirectDrawIndexedArgs[1];
+
+            highLODBuffer = new ComputeBuffer(localCount + 1, sizeof(int), ComputeBufferType.Append);
+
+            highCommandData[0].indexCountPerInstance = highLODGrassMesh.GetIndexCount(0);
+            highCommandData[0].instanceCount = 1;
+            highCommandBuf.SetData(highCommandData);
+
+            buffersGenerated = true;
+        }
     }
 
     void RenderGrass()
     {
-        if (grassMesh == null || grassMaterial == null) return;
-
-        highLODGrassBuffer.SetCounterValue(0);
-
-        GrassCull.SetBuffer(0, "highLODGrassBuffer", highLODGrassBuffer);
-        GrassCull.SetBuffer(0, "allGrassPositions", grassBuffer);
-
-        int localGrassCount = (int)(count * density);
-
-        GrassCull.SetInt("count", localGrassCount);
-        GrassCull.SetVector("camPos", Camera.main.transform.position);
-        GrassCull.SetFloat("alpha", density);
-
-        GrassCull.SetFloat("closeDst", closeDistance * density);
-        GrassCull.SetFloat("farDst", farDistance * density);
+        if (!buffersGenerated) return;
+        if (highLODGrassMesh == null || grassMaterial == null) return;
+        if (density <= 0.05f) return;
 
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
         Vector4[] frustumPlanes = new Vector4[6];
         for (int i = 0; i < 6; i++)
         {
-            planes[i].distance += 3;
+            float leeway = (i == 0 || i == 1 || i == 2 || i == 3) ? frustrumLeeway : 0f;
+            planes[i].distance += leeway;
             frustumPlanes[i] = new Vector4(planes[i].normal.x, planes[i].normal.y, planes[i].normal.z, planes[i].distance);
         }
 
+        if (useCPUFrustrum && !GeometryUtility.TestPlanesAABB(planes, bounds))
+            return;
+
+
+        highLODBuffer.SetCounterValue(0);
+
+        GrassCull.SetBuffer(0, "highLODGrassBuffer", highLODBuffer);
+        GrassCull.SetBuffer(0, "allGrassPositions", grassBuffer);
+
+        int localGrassCount = (int)(localCount * density);
+        GrassCull.SetInt("count", localGrassCount);
+        GrassCull.SetVector("camPos", Camera.main.transform.position);
+        GrassCull.SetFloat("alpha", density);
+        GrassCull.SetFloat("closeDst", closeDistance * density);
+        GrassCull.SetFloat("farDst", farDistance * density);
+
         GrassCull.SetVectorArray("frustumPlanes", frustumPlanes);
 
-        GrassCull.Dispatch(0, Mathf.Max(Mathf.CeilToInt(localGrassCount / 528),1), 1, 1);
+        int threadGroups = Mathf.FloorToInt(localGrassCount / 528f) + 1;
+        threadGroups = Mathf.Max(threadGroups, 1);
+        GrassCull.Dispatch(0, threadGroups, 1, 1);
 
-        ComputeBuffer.CopyCount(highLODGrassBuffer, highLODGrassCount, 0);
-        int[] highCount = { 0 };
-        highLODGrassCount.GetData(highCount);
-        int highLODInstanceCount = highCount[0];
+        highRp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(new Vector3(-4.5f, 0, 0)));
+        highRp.matProps.SetBuffer("_GrassBuffer", grassBuffer);
+        highRp.matProps.SetBuffer("_highLODGrassIndicies", highLODBuffer);
 
-        grassMaterial.SetBuffer("_GrassBuffer", grassBuffer);
-        grassMaterial.SetBuffer("_highLODGrassIndicies", highLODGrassBuffer);
-        RenderParams rp = new RenderParams(grassMaterial);
-        rp.worldBounds = new Bounds(Vector3.zero, 10000 * Vector3.one);
-        rp.matProps = new MaterialPropertyBlock();
-        rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(new Vector3(-4.5f, 0, 0)));
-        commandData[0].indexCountPerInstance = grassMesh.GetIndexCount(0);
-        commandData[0].instanceCount = (uint)highLODInstanceCount;
-        commandBuf.SetData(commandData);
+        GraphicsBuffer.CopyCount(highLODBuffer, highCommandBuf, sizeof(uint));
 
-        UnityEngine.Graphics.RenderMeshIndirect(rp, grassMesh, commandBuf, commandCount);
+        Graphics.RenderMeshIndirect(highRp, highLODGrassMesh, highCommandBuf, 1);
+
     }
 
     void OnDestroy()
@@ -151,8 +191,7 @@ public class GrassSpawnHandler : MonoBehaviour
     void Release()
     {
         grassBuffer?.Release();
-        commandBuf?.Release();
-        highLODGrassBuffer?.Release();
-        highLODGrassCount?.Release();
+        highCommandBuf?.Release();
+        highLODBuffer?.Release();
     }
 }

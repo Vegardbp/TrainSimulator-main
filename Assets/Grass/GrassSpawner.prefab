@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6576799196411243948
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6111615402975520574}
+  - component: {fileID: 8862115608363993615}
+  m_Layer: 0
+  m_Name: GrassSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6111615402975520574
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6576799196411243948}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8862115608363993615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6576799196411243948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eff0968d0a4dfd47b261733e9fc937f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  count: 250000
+  regenerate: 0
+  ground:
+    serializedVersion: 2
+    m_Bits: 8
+  size: 40
+  heightAdder: 0
+  highLODGrassMesh: {fileID: -3571622678255362118, guid: ec3a724a3c4e8e340a6b0c80361b8d26, type: 3}
+  grassMaterial: {fileID: 2100000, guid: ca61cddd2d320d24b8ad9ffa5c6780e7, type: 2}
+  closeDistance: 50
+  farDistance: 150
+  density: 1
+  framesForGeneration: 5
+  useCPUFrustrum: 1
+  GrassCull: {fileID: 7200000, guid: dcf2e9a79349c6042a6a8a653bcb2229, type: 3}
+  frustrumLeeway: 6

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using static UnityEngine.GraphicsBuffer;
 
 public class Train : MonoBehaviour
 {
@@ -8,12 +9,14 @@ public class Train : MonoBehaviour
         new Vector2Int(27,37),
         new Vector2Int(51,60)};
     List<int> trackBlocks = new List<int> {1, 1, 15, 25, 32, 32, 41, 47, 59, 59};
-    List<bool> trackBlockAlt = new List<bool> {false, true, false, false,  true, false, false, false, false, true};
+    List<bool> trackBlockAlt = new List<bool> {false, true, false, false,  false, true, false, false, false, true};
+
+    [HideInInspector] public Flag targetFlag = null;
 
     public bool active = true;
 
-    public int targetBlock;
-    public int currentBlock;
+    public int targetBlock = 1;
+    public int currentBlock = 1;
 
     public float position = 0f; // Position between 0 and 60 (always relative to the main track)
     public bool isOnAltTrack = false; // Whether the train is on an alternate track
@@ -44,6 +47,12 @@ public class Train : MonoBehaviour
         isOnAltTrack = trackBlockAlt[currentBlock - 1];
     }
 
+    private void Update()
+    {
+        if(targetFlag != null)
+            targetFlag.outline.EnableOutline();
+    }
+
     void FixedUpdate()
     {
         position = Mathf.Clamp(position, 1f, 59f);
@@ -61,9 +70,9 @@ public class Train : MonoBehaviour
 
         if (active)
         {
-            if (dstToCurrent > 12.5f) // Resync position if neccesarry
+            if (dstToCurrent > 20.0f) // Resync position if neccesarry
                 position = currentPos;
-            if (dstToCurrent < 4) // Resync alt track state if neccesary
+            if (dstToCurrent < 2) // Resync alt track state if neccesary
                 isOnAltTrack = currentAltState;
             isOnAltTrack = currentAltState;
             if (dstToTarg < dstToCurrent)
@@ -72,8 +81,11 @@ public class Train : MonoBehaviour
 
         // Get the position on the main track
         var (mainTrackPosition, mainTrackForward) = PowerPro.Singleton.mainTrack.GetPositionAtNormalized(normalizedPosition);
-        if(active)
-            position += topSpeed*Mathf.Clamp01(dstToTarg)*Mathf.Sign(targDelta) /100.0f * Time.deltaTime;
+        if (active)
+        {
+            speed = Mathf.MoveTowards(speed, topSpeed, topSpeed * Time.deltaTime);
+            position += speed * Mathf.Clamp01(dstToTarg) * Mathf.Sign(targDelta) / 100.0f * Time.deltaTime;
+        }
         if (!isOnAltTrack || !InAltTrackRange())
         {
             // If on the main track, use the main track position directly
