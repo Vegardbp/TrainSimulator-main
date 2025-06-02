@@ -27582,7 +27582,7 @@ MonoBehaviour:
   inputPort: 502
   modbusStartIndex: 0
   maxTrains: 2
-  updateFrequency: 50
+  updateFrequency: 1
   connected: 0
 --- !u!1 &1809687479
 GameObject:

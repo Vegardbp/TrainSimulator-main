@@ -22,11 +22,8 @@ public class PowerProModbus : MonoBehaviour
     UModbusTCP.ResponseData m_oUModbusTCPResponse;
     UModbusTCP.ExceptionData m_oUModbusTCPException;
 
-    float updateDelay;
-
     void Awake()
     {
-        updateDelay = 1.0f/updateFrequency;
         //UModbusTCP
         m_oUModbusTCP = null;
         m_oUModbusTCPResponse = null;
@@ -39,33 +36,28 @@ public class PowerProModbus : MonoBehaviour
 
     void Update()
     {
-        if (connected)
-        {
-            TryRead();
-            List<ushort> writeData = new();
-            var trains = PowerPro.Singleton.trains;
-            for (int i = 0; i < trains.Count; i++)
-            {
-                if (trains[i].targetFlag != null)
-                {
-                    writeData.Add((ushort)trains[i].targetFlag.index);
-                }
-                else
-                {
-                    writeData.Add((ushort)1000);
-                }
-            }
-            WriteHolding((ushort)(maxTrains * 2 + 1), writeData);
-        }
-    }
-
-    void TryRead()
-    {
         t += Time.deltaTime;
-        if (t > updateDelay)
+        if(t >= 1.0 / (float)updateFrequency)
         {
-            ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2)); //read everything for debug and update
             t = 0;
+            if (connected)
+            {
+                ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2));
+                //List<ushort> writeData = new();
+                //var trains = PowerPro.Singleton.trains;
+                //for (int i = 0; i < trains.Count; i++)
+                //{
+                //    if (trains[i].targetFlag != null)
+                //    {
+                //        writeData.Add((ushort)trains[i].targetFlag.index);
+                //    }
+                //    else
+                //    {
+                //        writeData.Add((ushort)1000);
+                //    }
+                //}
+                //WriteHolding((ushort)(maxTrains * 2), writeData);
+            }
         }
     }
 

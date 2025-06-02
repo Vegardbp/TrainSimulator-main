@@ -9,7 +9,7 @@ public class Train : MonoBehaviour
         new Vector2Int(27,37),
         new Vector2Int(51,60)};
     List<int> trackBlocks = new List<int> {1, 1, 15, 25, 32, 32, 41, 47, 59, 59};
-    List<bool> trackBlockAlt = new List<bool> {false, true, false, false,  false, true, false, false, false, true};
+    List<bool> trackBlockAlt = new List<bool> {false, true, false, false,  false, true, false, false, true, false};
 
     [HideInInspector] public Flag targetFlag = null;
 
