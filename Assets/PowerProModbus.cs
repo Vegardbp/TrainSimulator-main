@@ -16,6 +16,8 @@ public class PowerProModbus : MonoBehaviour
     [HideInInspector]
     public bool connected = false;
 
+    public ushort startWriteAddress = 4;
+
     //Private vars
     //UModbusTCP
     UModbusTCP m_oUModbusTCP;
@@ -42,21 +44,23 @@ public class PowerProModbus : MonoBehaviour
             t = 0;
             if (connected)
             {
+                List<ushort> writeData = new();
+                var trains = PowerPro.Singleton.trains;
+                for (int i = 0; i < trains.Count; i++)
+                {
+                    if (trains[i].targetFlag != null)
+                    {
+                        writeData.Add((ushort)trains[i].targetFlag.index);
+                        writeData.Add((ushort)1);
+                    }
+                    else
+                    {
+                        writeData.Add((ushort)1000);
+                        writeData.Add((ushort)0);
+                    }
+                }
+                WriteHolding(startWriteAddress, writeData);
                 ReadHolding(modbusStartIndex, (ushort)(maxTrains * 2));
-                //List<ushort> writeData = new();
-                //var trains = PowerPro.Singleton.trains;
-                //for (int i = 0; i < trains.Count; i++)
-                //{
-                //    if (trains[i].targetFlag != null)
-                //    {
-                //        writeData.Add((ushort)trains[i].targetFlag.index);
-                //    }
-                //    else
-                //    {
-                //        writeData.Add((ushort)1000);
-                //    }
-                //}
-                //WriteHolding((ushort)(maxTrains * 2), writeData);
             }
         }
     }

@@ -84,7 +84,7 @@ public class Train : MonoBehaviour
         if (active)
         {
             speed = Mathf.MoveTowards(speed, topSpeed, topSpeed * Time.deltaTime);
-            position += speed * Mathf.Clamp01(dstToTarg) * Mathf.Sign(targDelta) / 100.0f * Time.deltaTime;
+            position += speed * Mathf.Clamp01(dstToTarg) * Mathf.Sign(targDelta) / 70.0f * Time.deltaTime;
         }
         if (!isOnAltTrack || !InAltTrackRange())
         {
